@@ -106,7 +106,7 @@ void exec_tree(char *path) {
   }
 
   if (fstat(fd, &st) < 0) {
-    printf(STDERR, "tree: cannot stat path '%s'\n", path);
+    printf(STDERR, "tree: cannot get stat for path '%s'\n", path);
     close(fd);
     return;
   }
@@ -140,7 +140,7 @@ void exec_list(char *path) {
   }
 
   if (fstat(fd, &st) < 0) {
-    printf(STDERR, "list: cannot stat path '%s'\n", path);
+    printf(STDERR, "list: cannot get stat for path '%s'\n", path);
     close(fd);
     return;
   }
@@ -198,7 +198,7 @@ void exec_stat(char *path) {
   }
 
   if (fstat(fd, &st) < 0) {
-    printf(STDERR, "stat: cannot stat path '%s'\n", path);
+    printf(STDERR, "stat: cannot get stat for path '%s'\n", path);
     close(fd);
     return;
   }
@@ -213,6 +213,7 @@ void exec_stat(char *path) {
   } else {
     printf(STDOUT, "   type: dev\n");
   }
+
   printf(STDOUT, " device: %d\n", st.dev);
   printf(STDOUT, "inumber: %d\n", st.ino);
   printf(STDOUT, "  links: %d\n", st.nlink);
@@ -239,7 +240,7 @@ void exec_info(char *arg) {
   if (arg[0] == 'i') {
     arg++;
     inum = atoi(arg);
-    if (inum == 0 || inum >= sb.ninodes) {
+    if (inum <= 0 || inum >= sb.ninodes) {
       printf(STDOUT, "info: invalid inumber %d\n", inum);
       return;
     }
@@ -305,6 +306,32 @@ void exec_info(char *arg) {
   }
 }
 
+void exec_help(void) {
+  printf(STDOUT, "xray - examine inside the xv6 file system\n");
+  printf(STDOUT, "usage: COMMAND [ARGUMENT]\n");
+  printf(STDOUT, "\n");
+  printf(STDOUT, "Available COMMANDs:\n");
+  printf(STDOUT, "   tree [PATH] - prints tree hierarchy\n"
+                 "        where PATH is path to directory\n"
+                 "        defaults to using current directory\n");
+  printf(STDOUT, "\n");
+  printf(STDOUT, "   list [PATH] - prints directory content\n"
+                 "        where PATH is path to directory\n"
+                 "        defaults to using current directory\n");
+  printf(STDOUT, "\n");
+  printf(STDOUT, "   stat PATH   - prints stats about file\n"
+                 "        where PATH is path to the file\n"
+                 "        argument PATH is required\n");
+  printf(STDOUT, "\n");
+  printf(STDOUT, "   info ARG    - prints inode info\n"
+                 "        argument ARG is required\n"
+                 "        where ARG is 'super' for superblock\n"
+                 "                  or 'i#' for inode with inumber #\n");
+  printf(STDOUT, "   exit        - exit this program\n");
+  printf(STDOUT, "   quit        - alias for exit\n");
+  printf(STDOUT, "   help        - prints this help message\n");
+}
+
 void interpret(char *cmd) {
   int i;
   char *arg = "";
@@ -327,6 +354,10 @@ void interpret(char *cmd) {
     exec_stat(arg);
   } else if (strcmp(cmd, "info") == 0) {
     exec_info(arg);
+  } else if (strcmp(cmd, "help") == 0) {
+    exec_help();
+  } else {
+    printf(STDOUT, "xray: unrecognized command '%s'\n", cmd);
   }
 }
 
