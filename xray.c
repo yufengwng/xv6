@@ -11,7 +11,7 @@
 #define STDOUT 1
 #define STDERR 2
 #define BUFSIZE 512
-#define DEPTH 10
+#define DEPTH 5
 
 static uint iswhitespace(char c) {
   return (c == '\n' || c == '\r' || c == '\f'
@@ -36,7 +36,11 @@ void print_dir(int lvl, char *path) {
   struct dirent de;
   struct stat st;
 
-  if (lvl > DEPTH) {
+  if (lvl >= DEPTH) {
+    for (i = 0; i < lvl; i++) {
+      printf(STDOUT, "   ");
+    }
+    printf(STDOUT, "|- ...");
     return;
   }
 
