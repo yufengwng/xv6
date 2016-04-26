@@ -1,6 +1,7 @@
 struct stat;
 struct rtcdate;
 struct superblock;
+struct dinode;
 
 // system calls
 int fork(void);
@@ -25,6 +26,7 @@ char* sbrk(int);
 int sleep(int);
 int uptime(void);
 int readsb(struct superblock*);
+int readdi(int, struct dinode*);
 
 // ulib.c
 int stat(char*, struct stat*);

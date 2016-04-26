@@ -217,18 +217,75 @@ void exec_stat(char *path) {
 }
 
 void exec_info(char *arg) {
+  int i;
+  int inum;
   struct superblock sb;
+  struct dinode di;
 
   if (strlen(arg) == 0) {
+    printf(STDOUT, "useage: info ARG\n");
     return;
   }
 
-  if (strcmp(arg, "super") == 0) {
-    if (readsb(&sb) < 0) {
-      printf(STDOUT, "info: cannot get superblock info\n");
+  if (readsb(&sb) < 0) {
+    printf(STDOUT, "info: cannot get superblock info\n");
+    return;
+  }
+
+  if (arg[0] == 'i') {
+    arg++;
+    inum = atoi(arg);
+    if (inum == 0 || inum >= sb.ninodes) {
+      printf(STDOUT, "info: invalid inumber %d\n", inum);
       return;
     }
 
+    if (readdi(inum, &di) < 0) {
+      printf(STDOUT, "info: cannot get inode %d info\n", inum);
+      return;
+    }
+
+    printf(STDOUT, "inode %d\n", inum);
+    printf(STDOUT, "-------------\n");
+
+    if (di.type == T_DIR) {
+      printf(STDOUT, "        type: dir\n");
+    } else if (di.type == T_FILE) {
+      printf(STDOUT, "        type: file\n");
+    } else {
+      printf(STDOUT, "        type: dev\n");
+    }
+
+    if (di.type == T_DEV) {
+      printf(STDOUT, "   dev major: %d\n", di.major);
+      printf(STDOUT, "   dev minor: %d\n", di.minor);
+    } else {
+      printf(STDOUT, "   dev major: -\n");
+      printf(STDOUT, "   dev minor: -\n");
+    }
+
+    printf(STDOUT, "       links: %d\n", di.nlink);
+    printf(STDOUT, "        size: %d\n", di.size);
+
+    printf(STDOUT, "   blk addrs: ");
+    for (i = 0; i < NDIRECT; i++) {
+      if (di.type == T_DEV) {
+        printf(STDOUT, "-\n");
+      } else {
+        printf(STDOUT, "%d\n", di.addrs[i]);
+      }
+      if (i < NDIRECT - 1) {
+        printf(STDOUT, "              ");
+      }
+    }
+
+    if (di.type == T_DEV) {
+      printf(STDOUT, "indirect blk: -\n");
+    } else {
+      printf(STDOUT, "indirect blk: %d\n", di.addrs[NDIRECT]);
+    }
+    printf(STDOUT, "\n");
+  } else if (strcmp(arg, "super") == 0) {
     printf(STDOUT, "superblock\n");
     printf(STDOUT, "-----------------\n");
     printf(STDOUT, "         fs blks: %d\n", sb.size);
@@ -239,6 +296,8 @@ void exec_info(char *arg) {
     printf(STDOUT, " inode start blk: %d\n", sb.inodestart);
     printf(STDOUT, "bitmap start blk: %d\n", sb.bmapstart);
     printf(STDOUT, "\n");
+  } else {
+    printf(STDOUT, "info: unrecognized argument '%s'\n", arg);
   }
 }
 

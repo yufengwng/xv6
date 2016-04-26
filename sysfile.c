@@ -453,3 +453,21 @@ int sys_readsb(void) {
   readsb(1, sb);
   return 0;
 }
+
+int sys_readdi(void) {
+  int inum;
+  char *ptr;
+  struct dinode *dip;
+
+  if (argint(0, &inum) < 0 || argptr(1, &ptr, sizeof(struct dinode)) < 0) {
+    return -1;
+  }
+
+  dip = (struct dinode*) ptr;
+  if (readdi(1, inum, dip) < 0) {
+    return -1;
+  }
+
+  return 0;
+}
+

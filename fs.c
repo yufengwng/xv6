@@ -343,6 +343,30 @@ iunlockput(struct inode *ip)
   iput(ip);
 }
 
+// Read the inode info from disk into a dinode.
+int readdi(uint dev, uint inum, struct dinode *dip) {
+  struct buf *bp;
+  struct dinode *diptr;
+
+  bp = bread(dev, IBLOCK(inum, sb));
+  diptr = (struct dinode*) bp->data + inum % IPB;
+
+  if (diptr->type == 0) {
+    brelse(bp);
+    return -1;
+  }
+
+  dip->type = diptr->type;
+  dip->major = diptr->major;
+  dip->minor = diptr->minor;
+  dip->nlink = diptr->nlink;
+  dip->size = diptr->size;
+  memmove(dip->addrs, diptr->addrs, sizeof(dip->addrs));
+  brelse(bp);
+
+  return 0;
+}
+
 //PAGEBREAK!
 // Inode content
 //
