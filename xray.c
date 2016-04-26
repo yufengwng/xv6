@@ -93,7 +93,7 @@ void exec_tree(char *path) {
   struct stat st;
 
   if (strlen(path) == 0) {
-    path = ".";
+    path = "./";
   }
 
   if ((fd = open(path, 0)) < 0) {
@@ -127,7 +127,7 @@ void exec_list(char *path) {
   char buf[DIRSIZ+1];
 
   if (strlen(path) == 0) {
-    path = ".";
+    path = "./";
   }
 
   if ((fd = open(path, 0)) < 0) {
