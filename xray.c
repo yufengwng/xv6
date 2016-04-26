@@ -204,7 +204,7 @@ void exec_stat(char *path) {
   } else {
     printf(STDOUT, "   type: dev\n");
   }
-  printf(STDOUT, "devices: %d\n", st.dev);
+  printf(STDOUT, " device: %d\n", st.dev);
   printf(STDOUT, "inumber: %d\n", st.ino);
   printf(STDOUT, "  links: %d\n", st.nlink);
   printf(STDOUT, "   size: %d\n", st.size);
