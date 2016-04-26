@@ -28,6 +28,7 @@ void print_dir(int lvl, char *path) {
   int i;
   int fd;
 
+  char buf[BUFSIZE];
   char name[BUFSIZE];
   char *ptr;
 
@@ -70,7 +71,10 @@ void print_dir(int lvl, char *path) {
     }
     printf(STDOUT, "|- ");
 
-    printf(STDOUT, "%s\n", de.name);
+    strcpy(buf, de.name);
+    buf[DIRSIZ] = '\0';
+
+    printf(STDOUT, "%s\n", buf);
     if (st.type == T_DIR) {
       print_dir(lvl + 1, name);
     }
@@ -84,8 +88,7 @@ void exec_tree(char *path) {
   struct stat st;
 
   if (strlen(path) == 0) {
-    printf(STDOUT, "usage: tree DIR\n");
-    return;
+    path = ".";
   }
 
   if ((fd = open(path, 0)) < 0) {
@@ -111,6 +114,62 @@ void exec_tree(char *path) {
   printf(STDOUT, "\n");
 }
 
+void exec_list(char *path) {
+  int fd;
+  int pad;
+  struct stat st;
+  struct dirent de;
+
+  if (strlen(path) == 0) {
+    path = ".";
+  }
+
+  if ((fd = open(path, 0)) < 0) {
+    printf(STDERR, "list: cannot open path '%s'\n", path);
+    return;
+  }
+
+  if (fstat(fd, &st) < 0) {
+    printf(STDERR, "list: cannot stat path '%s'\n", path);
+    close(fd);
+    return;
+  }
+
+  if (st.type != T_DIR) {
+    printf(STDERR, "list: not a directory at path '%s'\n", path);
+    close(fd);
+    return;
+  }
+
+  pad = DIRSIZ - 4;
+  printf(STDOUT, "name");
+  while (pad-- > 0) {
+    printf(STDOUT, " ");
+  }
+  printf(STDOUT, " inumber\n");
+
+  for (pad = 0; pad < DIRSIZ; pad++) {
+    printf(STDOUT, "-");
+  }
+  printf(STDOUT, "--------\n");
+
+  while (read(fd, &de, sizeof(de)) == sizeof(de)) {
+    if (de.inum == 0) {
+      continue;
+    }
+
+    pad = DIRSIZ - strlen(de.name);
+    printf(STDOUT, "%s", de.name);
+    while (pad-- > 0) {
+      printf(STDOUT, " ");
+    }
+    printf(STDOUT, " %d\n", de.inum);
+  }
+  printf(STDOUT, "\n");
+
+  close(fd);
+}
+
 void interpret(char *cmd) {
   int i;
   char *arg = "";
@@ -127,6 +186,8 @@ void interpret(char *cmd) {
     exit();
   } else if (strcmp(cmd, "tree") == 0) {
     exec_tree(arg);
+  } else if (strcmp(cmd, "list") == 0) {
+    exec_list(arg);
   }
 }
 
