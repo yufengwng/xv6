@@ -180,7 +180,8 @@ void exec_stat(char *path) {
   struct stat st;
 
   if (strlen(path) == 0) {
-    path = ".";
+    printf(STDOUT, "usage: stat PATH\n");
+    return;
   }
 
   if ((fd = open(path, 0)) < 0) {
@@ -211,6 +212,32 @@ void exec_stat(char *path) {
   printf(STDOUT, "\n");
 }
 
+void exec_info(char *arg) {
+  struct superblock sb;
+
+  if (strlen(arg) == 0) {
+    return;
+  }
+
+  if (strcmp(arg, "super") == 0) {
+    if (readsb(&sb) < 0) {
+      printf(STDOUT, "info: cannot get superblock info\n");
+      return;
+    }
+
+    printf(STDOUT, "superblock\n");
+    printf(STDOUT, "-----------------\n");
+    printf(STDOUT, "         fs blks: %d\n", sb.size);
+    printf(STDOUT, "   num data blks: %d\n", sb.nblocks);
+    printf(STDOUT, "      num inodes: %d\n", sb.ninodes);
+    printf(STDOUT, "    num log blks: %d\n", sb.nlog);
+    printf(STDOUT, "   log start blk: %d\n", sb.logstart);
+    printf(STDOUT, " inode start blk: %d\n", sb.inodestart);
+    printf(STDOUT, "bitmap start blk: %d\n", sb.bmapstart);
+    printf(STDOUT, "\n");
+  }
+}
+
 void interpret(char *cmd) {
   int i;
   char *arg = "";
@@ -231,6 +258,8 @@ void interpret(char *cmd) {
     exec_list(arg);
   } else if (strcmp(cmd, "stat") == 0) {
     exec_stat(arg);
+  } else if (strcmp(cmd, "info") == 0) {
+    exec_info(arg);
   }
 }
 

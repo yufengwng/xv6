@@ -1,5 +1,6 @@
 struct stat;
 struct rtcdate;
+struct superblock;
 
 // system calls
 int fork(void);
@@ -23,6 +24,7 @@ int getpid(void);
 char* sbrk(int);
 int sleep(int);
 int uptime(void);
+int readsb(struct superblock*);
 
 // ulib.c
 int stat(char*, struct stat*);

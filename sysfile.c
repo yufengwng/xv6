@@ -440,3 +440,16 @@ sys_pipe(void)
   fd[1] = fd1;
   return 0;
 }
+
+int sys_readsb(void) {
+  char *ptr;
+  struct superblock *sb;
+
+  if (argptr(0, &ptr, sizeof(struct superblock)) < 0) {
+    return -1;
+  }
+
+  sb = (struct superblock*) ptr;
+  readsb(1, sb);
+  return 0;
+}
