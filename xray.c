@@ -76,7 +76,7 @@ void print_dir(int lvl, char *path) {
     }
     printf(STDOUT, "|- ");
 
-    strcpy(buf, de.name);
+    memmove(buf, de.name, DIRSIZ);
     buf[DIRSIZ] = '\0';
 
     printf(STDOUT, "%s\n", buf);
@@ -124,6 +124,7 @@ void exec_list(char *path) {
   int pad;
   struct stat st;
   struct dirent de;
+  char buf[DIRSIZ+1];
 
   if (strlen(path) == 0) {
     path = ".";
@@ -163,8 +164,11 @@ void exec_list(char *path) {
       continue;
     }
 
-    pad = DIRSIZ - strlen(de.name);
-    printf(STDOUT, "%s", de.name);
+    memmove(buf, de.name, DIRSIZ);
+    buf[DIRSIZ] = '\0';
+
+    pad = DIRSIZ - strlen(buf);
+    printf(STDOUT, "%s", buf);
     while (pad-- > 0) {
       printf(STDOUT, " ");
     }
