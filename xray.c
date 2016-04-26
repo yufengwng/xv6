@@ -11,6 +11,7 @@
 #define STDOUT 1
 #define STDERR 2
 #define BUFSIZE 512
+#define DEPTH 10
 
 static uint iswhitespace(char c) {
   return (c == '\n' || c == '\r' || c == '\f'
@@ -28,12 +29,16 @@ void print_dir(int lvl, char *path) {
   int i;
   int fd;
 
-  char buf[BUFSIZE];
+  char buf[DIRSIZ+1];
   char name[BUFSIZE];
   char *ptr;
 
   struct dirent de;
   struct stat st;
+
+  if (lvl > DEPTH) {
+    return;
+  }
 
   if ((fd = open(path, 0)) < 0) {
     return;
@@ -170,6 +175,42 @@ void exec_list(char *path) {
   close(fd);
 }
 
+void exec_stat(char *path) {
+  int fd;
+  struct stat st;
+
+  if (strlen(path) == 0) {
+    path = ".";
+  }
+
+  if ((fd = open(path, 0)) < 0) {
+    printf(STDERR, "stat: cannot open path '%s'\n", path);
+    return;
+  }
+
+  if (fstat(fd, &st) < 0) {
+    printf(STDERR, "stat: cannot stat path '%s'\n", path);
+    close(fd);
+    return;
+  }
+
+  printf(STDOUT, "%s\n", path);
+  printf(STDOUT, "--------\n");
+
+  if (st.type == T_DIR) {
+    printf(STDOUT, "   type: dir\n");
+  } else if (st.type == T_FILE) {
+    printf(STDOUT, "   type: file\n");
+  } else {
+    printf(STDOUT, "   type: dev\n");
+  }
+  printf(STDOUT, "devices: %d\n", st.dev);
+  printf(STDOUT, "inumber: %d\n", st.ino);
+  printf(STDOUT, "  links: %d\n", st.nlink);
+  printf(STDOUT, "   size: %d\n", st.size);
+  printf(STDOUT, "\n");
+}
+
 void interpret(char *cmd) {
   int i;
   char *arg = "";
@@ -188,6 +229,8 @@ void interpret(char *cmd) {
     exec_tree(arg);
   } else if (strcmp(cmd, "list") == 0) {
     exec_list(arg);
+  } else if (strcmp(cmd, "stat") == 0) {
+    exec_stat(arg);
   }
 }
 
