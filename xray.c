@@ -228,7 +228,7 @@ void exec_info(char *arg) {
   struct dinode di;
 
   if (strlen(arg) == 0) {
-    printf(STDOUT, "useage: info ARG\n");
+    printf(STDOUT, "usage: info ARG\n");
     return;
   }
 
